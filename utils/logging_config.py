@@ -5,7 +5,6 @@ from pathlib import Path
 
 
 def setup_logging(name, project_dir, log_file_name, config):
-    # file_level='DEBUG', console_level='DEBUG'):
     """Setup logging configuration with dynamic log file naming and levels."""
 
     log_file_path = Path(project_dir, 'log', log_file_name)
@@ -13,9 +12,6 @@ def setup_logging(name, project_dir, log_file_name, config):
 
     file_level = config['logging']['file_level']
     console_level = config['logging']['console_level']
-
-    # logger = logging.getLogger(name)
-    # if not logger.handlers:
 
     LOGGING_CONFIG = {
         'version': 1,
@@ -47,16 +43,26 @@ def setup_logging(name, project_dir, log_file_name, config):
             },
         },
         'loggers': {
-            'matplotlib': {
+            # 'urllib3': {
+            #     'level': 'WARNING',
+            #     'handlers': ['console', 'file'],
+            #     'propagate': False
+            # },
+            'kafka': {
                 'level': 'WARNING',
                 'handlers': ['console', 'file'],
                 'propagate': False
             },
-        },
-        'root': {
-            'level': 'DEBUG',
-            'handlers': ['console', 'file'],
-        },
+            'prawcore': {
+                'level': 'WARNING',
+                'handlers': ['console', 'file'],
+                'propagate': False
+            },
+            'root': {
+                'level': 'DEBUG',
+                'handlers': ['console', 'file'],
+            },
+        }
     }
 
     logging.config.dictConfig(LOGGING_CONFIG)

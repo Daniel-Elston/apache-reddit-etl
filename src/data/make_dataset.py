@@ -6,8 +6,8 @@ import os
 import time
 
 import praw
+from kafka import KafkaProducer
 
-from utils.file_handler import temp_store
 from utils.setup_env import setup_project_env
 project_dir, config, setup_logs = setup_project_env()
 
@@ -18,12 +18,16 @@ CREDS = {
     'username': os.getenv('REDDIT_USERNAME'),
     'password': os.getenv('REDDIT_PASSWORD')
 }
+KAFKA_BROKER_URL = os.getenv('KAFKA_BROKER_URL')
+KAFKA_TOPIC = 'reddit_comments'
 
 
 class RedditManager:
-    def __init__(self, reddit_creds):
+    def __init__(self, reddit_creds, kafka_broker_url):
         self.reddit = praw.Reddit(**reddit_creds)
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.kafka_producer = KafkaProducer(bootstrap_servers=kafka_broker_url,
+                                            value_serializer=lambda m: json.dumps(m).encode('ascii'))
 
     def stream_comments(self, subreddit_name, filepath):
         try:
@@ -33,20 +37,23 @@ class RedditManager:
                     'timestamp': timestamp,
                     'body': comment.body
                 }
-                temp_store(data, filepath)
+                self.send_to_kafka(data)
 
         except praw.exceptions.PRAWException as e:
             self.logger.error(f"PRAW exception occurred: {e}")
         except Exception as e:
             self.logger.error(f"An unexpected error occurred: {e}")
 
-    def temp_store(self, data, filepath):
-        with open(filepath, 'w') as f:
-            json.dump(data, f)
+    def send_to_kafka(self, data):
+        try:
+            self.kafka_producer.send(KAFKA_TOPIC, value=data)
+            self.kafka_producer.flush()
+        except Exception as e:
+            self.logger.error(f"Failed to send data to Kafka: {e}")
 
 
 def main():
-    reddit_manager = RedditManager(CREDS)
+    reddit_manager = RedditManager(CREDS, KAFKA_BROKER_URL)
     subreddit_name = 'funny'
     filepath = f'data/temp/{subreddit_name}.json'
     reddit_manager.stream_comments(subreddit_name, filepath)

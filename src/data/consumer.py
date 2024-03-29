@@ -4,11 +4,9 @@ import json
 
 from kafka import KafkaConsumer
 
-# from utils.file_handler import temp_store
+from config import my_vars
 
-# Kafka configuration
-KAFKA_BROKER_URL = 'localhost:9092'
-KAFKA_TOPIC = 'reddit_comments'
+CREDS, KAFKA_BROKER_URL, KAFKA_TOPIC = my_vars()
 
 # Initialize Kafka consumer
 consumer = KafkaConsumer(
@@ -21,4 +19,3 @@ consumer = KafkaConsumer(
 # Consume messages
 for message in consumer:
     print(f"Received message: {message.value}")
-    # temp_store(message.value, 'data/temp/kafka-reddit_comments.json') # temp store

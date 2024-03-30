@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import logging
+import threading
 
 from config import my_vars
+from src.data.consumer import listen_to_messages
 from src.data.extract import ExtractData
 from src.data.producer import KafkaSender
 from utils.setup_env import setup_project_env
@@ -12,22 +14,23 @@ CREDS, KAFKA_BROKER_URL, KAFKA_TOPIC = my_vars()
 
 
 class Pipeline:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
+        # self.subreddit_name = config['subreddit_name']
 
+    def main(self):
+        extract_manager = ExtractData(CREDS)
+        produce_manager = KafkaSender(KAFKA_TOPIC, KAFKA_BROKER_URL)
 
-def main():
-    subreddit_name = 'funny'
+        def callback(data):
+            produce_manager.send_to_kafka(data)
 
-    extract_manager = ExtractData(CREDS)
-    produce_manager = KafkaSender(KAFKA_TOPIC, KAFKA_BROKER_URL)
+        # Start the consumer in a separate thread
+        consumer_thread = threading.Thread(target=listen_to_messages)
+        consumer_thread.start()
 
-    def callback(data):
-        produce_manager.send_to_kafka(data)
-
-    extract_manager.stream_comments(subreddit_name, callback)
+        extract_manager.stream_comments(config['subreddit_name'], callback)
 
 
 if __name__ == '__main__':
-    main()
+    Pipeline().main()

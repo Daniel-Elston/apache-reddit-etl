@@ -7,6 +7,8 @@ import praw
 
 
 class ExtractData:
+    """Extract data from the Reddit API"""
+
     def __init__(self, reddit_creds):
         self.reddit = praw.Reddit(**reddit_creds)
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -19,6 +21,7 @@ class ExtractData:
                     'timestamp': timestamp,
                     'body': comment.body
                 }
+                # Callback function
                 callback(data)
 
         except praw.exceptions.PRAWException as e:

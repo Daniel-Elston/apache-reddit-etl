@@ -14,15 +14,17 @@ CREDS, KAFKA_BROKER_URL, KAFKA_TOPIC = my_vars()
 
 
 class Pipeline:
+    """Pipeline class to orchestrate the data pipeline"""
+
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
-        # self.subreddit_name = config['subreddit_name']
 
-    def main(self):
+    def kafka_stream(self):
         extract_manager = ExtractData(CREDS)
         produce_manager = KafkaSender(KAFKA_TOPIC, KAFKA_BROKER_URL)
 
         def callback(data):
+            """Callback to process data. Data created in the extract stage."""
             produce_manager.send_to_kafka(data)
 
         # Start the consumer in a separate thread
@@ -30,6 +32,9 @@ class Pipeline:
         consumer_thread.start()
 
         extract_manager.stream_comments(config['subreddit_name'], callback)
+
+    def main(self):
+        self.kafka_stream()
 
 
 if __name__ == '__main__':

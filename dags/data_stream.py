@@ -6,7 +6,9 @@ from datetime import timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
+from src.data.pyspark import PySparkManagement
 from src.pipeline import Pipeline
+
 
 """
 SAMPLE DAG FILE:
@@ -31,12 +33,23 @@ dag = DAG(
 )
 
 
-def stream_data():
-    Pipeline().kafka_stream()
-
+# cassandra_task = PythonOperator(
+#     task_id='cassandra_manager',
+#     python_callable=CassandraManagement().main,
+#     dag=dag,
+# )
 
 produce_task = PythonOperator(
     task_id='stream_to_kafka',
-    python_callable=stream_data,
+    python_callable=Pipeline().kafka_stream,
     dag=dag,
 )
+
+extract_task = PythonOperator(
+    task_id='pyspark_processing',
+    python_callable=PySparkManagement().main,
+    dag=dag,
+)
+
+# cassandra_task >>
+produce_task >> extract_task

@@ -7,7 +7,7 @@ from pathlib import Path
 def setup_logging(name, project_dir, log_file_name, config):
     """Setup logging configuration with dynamic log file naming and levels."""
 
-    log_file_path = Path(project_dir, 'log', log_file_name)
+    log_file_path = Path(project_dir, 'logs', log_file_name)
     log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     file_level = config['logging']['file_level']
@@ -54,6 +54,11 @@ def setup_logging(name, project_dir, log_file_name, config):
                 'propagate': False
             },
             'prawcore': {
+                'level': 'WARNING',
+                'handlers': ['console', 'file'],
+                'propagate': False
+            },
+            'broker': {
                 'level': 'WARNING',
                 'handlers': ['console', 'file'],
                 'propagate': False

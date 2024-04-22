@@ -21,8 +21,7 @@ class ExtractData:
                     'timestamp': timestamp,
                     'body': comment.body
                 }
-                # Callback function
-                callback(data)
+                callback(data)  # Callback
 
         except praw.exceptions.PRAWException as e:
             self.logger.error(f"PRAW exception occurred: {e}")

@@ -16,7 +16,7 @@ def listen_to_messages():
         KAFKA_TOPIC,
         bootstrap_servers=[KAFKA_BROKER_URL],
         auto_offset_reset='latest',  # earliest
-        value_deserializer=lambda m: json.loads(m.decode('ascii'))
+        value_deserializer=lambda m: json.loads(m.decode('utf-8'))
     )
 
     # Consume messages
